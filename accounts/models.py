@@ -1,9 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from dreams.models import Dream
+
 # Create your models here.
 class User(AbstractUser):
-    dream = models.ManyToManyField(Dream, blank=True)
+    dream = models.ManyToManyField("dreams.Dream", blank=True)
     first_name = models.CharField(max_length=25, null=False, blank=False)
     last_name = models.CharField(max_length=25, null=False, blank=False)
     username = models.CharField(max_length=25, null=True, blank=True, unique=True)
