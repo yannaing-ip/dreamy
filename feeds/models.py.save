@@ -1,0 +1,7 @@
+from django.db import models
+from accounts.models import Account
+# Create your models here.
+class Feed(models.Model):
+    owner = Model.ForeignKey(Account, on_delete=models.CASCADE, null=False, blank=False)
+    content = Model.TextField(blank=True, null=True)
+    hash_tag = 
