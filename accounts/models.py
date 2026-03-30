@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from dreams.models import Dream
 # Create your models here.
-class Account(AbstractUser):
+class User(AbstractUser):
     dream = models.ManyToManyField(Dream, blank=True)
     first_name = models.CharField(max_length=25, null=False, blank=False)
     last_name = models.CharField(max_length=25, null=False, blank=False)
