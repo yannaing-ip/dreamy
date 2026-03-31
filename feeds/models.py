@@ -13,10 +13,33 @@ class Feed(models.Model):
         null=False,
         blank=False
     )
-    content = models.TextField(null=True, blank=True)
-    visibility = models.CharField(null=False, blank=False, choices=visibility_choice)
-    reactions = models.IntegerField(null=True, blank=True, default=0)
-    created_at = models.DateTimeField(auto_now_add=True)
+    content = models.TextField(
+            null=True,
+            blank=True
+        )
+    visibility = models.CharField(
+            null=False,
+            blank=False,
+            choices=visibility_choice
+        )
+    created_at = models.DateTimeField(
+            auto_now_add=True
+        )
+    updated_at = models.DateTimeField(
+            auto_now=True
+        )
+    
+    @property
+    def likes_count(self):
+        return self.likes.count()
+
+    @property
+    def comments_count(self):
+        return self.comments.count()
+
+    def __str__(self):
+        return f"{self.author.username} - {self.created_at}"
+
 
 class Like(models.Model):
     user = models.ForeignKey(
@@ -28,10 +51,33 @@ class Like(models.Model):
         on_delete=models.CASCADE,
         related_name="likes"
     )
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(
+            auto_now_add=True
+        )
 
     class Meta:
         unique_together = ("user", "feed")
 
     def __str__(self):
         return f"{self.user.username} liked Feed {self.feed.id}"
+
+
+class Comment(models.Model):
+    author = models.ForeignKey(
+            User,
+            on_delete=models.CASCADE
+        )
+    feed = models.ForeignKey(
+            Feed,
+            on_delete=models.CASCADE,
+            related_name="comments"
+        )
+    content = models.TextField()
+    created_at = models.DateTimeField(
+            auto_now_add=True
+        )
+
+    def __str__(self):
+        return f"{self.author.username} on Feed {self.feed.id}"
+
+
