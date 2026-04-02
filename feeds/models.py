@@ -6,17 +6,20 @@ visibility_choice = {
         "PR" : "private",
         "PL" : "public"
     }
+
 class Feed(models.Model):
     author = models.ForeignKey(
         User,
         models.CASCADE,
         null=False,
         blank=False
-    )
+        )
     content = models.TextField(
             null=True,
             blank=True
         )
+    like_count = models.IntegerField(default=0)
+    comment_count = models.IntegerField(default=0)
     visibility = models.CharField(
             null=False,
             blank=False,
@@ -28,14 +31,6 @@ class Feed(models.Model):
     updated_at = models.DateTimeField(
             auto_now=True
         )
-    
-    @property
-    def likes_count(self):
-        return self.likes.count()
-
-    @property
-    def comments_count(self):
-        return self.comments.count()
 
     def __str__(self):
         return f"{self.author.username} - {self.created_at}"

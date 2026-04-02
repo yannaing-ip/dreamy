@@ -6,7 +6,9 @@ class User(AbstractUser):
     dream = models.ManyToManyField(
             "dreams.Dream",
             blank=True
-        )
+            )
+    follower_count = models.IntegerField(default=0)
+    follow_count = models.IntegerField(default=0)
     first_name = models.CharField(
             max_length=25,
             null=False,
@@ -51,7 +53,7 @@ class Follow(models.Model):
             User,
             on_delete=models.CASCADE,
             related_name="following"
-        )
+            )
     following = models.ForeignKey(
             User,
             on_delete=models.CASCADE,
