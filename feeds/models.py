@@ -1,5 +1,6 @@
 from django.db import models
 from accounts.models import User
+from dreams.models import Dream
 
 # Create your models here.
 visibility_choice = {
@@ -15,8 +16,8 @@ class Feed(models.Model):
         blank=False
         )
     content = models.TextField(
-            null=True,
-            blank=True
+            null=Fase,
+            blank=False
         )
     dreams = models.ManyToManyField(
         Dream,
