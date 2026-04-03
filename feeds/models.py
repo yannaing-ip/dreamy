@@ -18,6 +18,10 @@ class Feed(models.Model):
             null=True,
             blank=True
         )
+    dreams = models.ManyToManyField(
+        Dream,
+        related_name="feeds"
+    )
     like_count = models.IntegerField(default=0)
     comment_count = models.IntegerField(default=0)
     visibility = models.CharField(
