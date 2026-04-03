@@ -1,9 +1,9 @@
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.generics import CreateAPIView, GenericAPIView, RetrieveAPIView
 from rest_framework.views import APIView
-from .models import User
-from .serializers import RegisterSerializer, LoginSerializer, MeSerializer
+from .models import User, Follow
+from .serializers import RegisterSerializer, LoginSerializer, MeSerializer, UserFollowSerializer
 from django.contrib.auth import login
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -47,3 +47,43 @@ class LoginView(GenericAPIView):
             "access":f"{refresh_token.access_token}",
             "refresh":f"{refresh_token}"
             })
+
+class FollowToggleView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, user_id):
+        try:
+            target_user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=404)
+
+        if request.user == target_user:
+            return Response({"error": "Cannot follow yourself"}, status=400)
+
+        follow, created = Follow.objects.get_or_create(
+            follower=request.user,
+            following=target_user
+        )
+
+        if not created:
+            follow.delete()
+            return Response({"message": "Unfollowed successfully"})
+
+        return Response({"message": "Followed successfully"})
+
+class FollowersListView(generics.ListAPIView):
+    serializer_class = UserFollowSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user_id = self.kwargs["user_id"]
+        return User.objects.filter(following__following__id=user_id)
+
+class FollowingListView(generics.ListAPIView):
+    serializer_class = UserFollowSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user_id = self.kwargs["user_id"]
+        return User.objects.filter(followers__follower__id=user_id)
+
