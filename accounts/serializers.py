@@ -5,6 +5,17 @@ from dreams.serializers import DreamSerializer
 
 User = get_user_model()
 
+class AuthorSerializer(serializers.ModelSerializer):
+     class Meta:
+         model = User
+         fields = [
+                 "id",
+                 "username",
+                 "email",
+                 "first_name",
+                 "last_name",
+                 ]
+
 class MeSerializer(serializers.ModelSerializer):
     dream = DreamSerializer(many=True, read_only=True)
     class Meta:

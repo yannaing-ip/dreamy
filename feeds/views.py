@@ -1,7 +1,7 @@
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics
 from .models import Feed
-from .serializers import FeedSerializer
+from .serializers import FeedSerializer, FeedDetailSerializer
 
 class FeedView(generics.ListCreateAPIView):
 
@@ -14,3 +14,9 @@ class FeedView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+
+class FeedDetailView(generics.RetrieveAPIView):
+
+    serializer_class = FeedDetailSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = Feed.objects.all()
