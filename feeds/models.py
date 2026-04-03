@@ -16,7 +16,7 @@ class Feed(models.Model):
         blank=False
         )
     content = models.TextField(
-            null=Fase,
+            null=False,
             blank=False
         )
     dreams = models.ManyToManyField(
