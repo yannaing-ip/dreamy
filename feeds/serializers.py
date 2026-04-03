@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Feed
+from .models import Feed, Like, User
+from django.contrib.auth import get_user_model
 from accounts.serializers import MeSerializer, AuthorSerializer
 
 class FeedSerializer(serializers.ModelSerializer):
@@ -25,3 +26,8 @@ class FeedDetailSerializer(serializers.ModelSerializer):
                 "created_at",
                 "updated_at"
                 ]
+
+class LikeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "first_name", "last_name"]
