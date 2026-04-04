@@ -3,7 +3,7 @@ from rest_framework import status, generics
 from rest_framework.generics import CreateAPIView, GenericAPIView, RetrieveAPIView
 from rest_framework.views import APIView
 from .models import User, Follow
-from .serializers import RegisterSerializer, LoginSerializer, MeSerializer, UserFollowSerializer
+from .serializers import RegisterSerializer, LoginSerializer, MeSerializer, UserFollowSerializer, ProfileSerializer
 from django.contrib.auth import login
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -87,3 +87,8 @@ class FollowingListView(generics.ListAPIView):
         user_id = self.kwargs["user_id"]
         return User.objects.filter(followers__follower__id=user_id)
 
+class ProfileView(RetrieveAPIView):
+    serializer_class = ProfileSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'id'
+    queryset = User.objects.all()

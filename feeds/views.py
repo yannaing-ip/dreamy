@@ -18,6 +18,16 @@ class FeedView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
+class FeedDeleteView(generics.DestroyAPIView):
+    queryset = Feed.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def destroy(self, request, *args, **kwargs):
+        feed = self.get_object()
+        if request.user != feed.author:
+            return Response({"error": "Not allowed"}, status=403)
+        return Response({"message": "Feed deleted successfully"}, status=status.HTTP_200_OK)
+
 class FeedDetailView(generics.RetrieveAPIView):
 
     serializer_class = FeedDetailSerializer
