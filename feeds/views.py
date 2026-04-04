@@ -2,13 +2,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics
 from .models import Feed, Like, Comment
 from rest_framework import status
-from .serializers import FeedSerializer, FeedDetailSerializer, LikeSerializer, CommentSerializer
+from .serializers import FeedDetailSerializer, LikeSerializer, CommentSerializer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 class FeedView(generics.ListCreateAPIView):
 
-    serializer_class = FeedSerializer
+    serializer_class = FeedDetailSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):

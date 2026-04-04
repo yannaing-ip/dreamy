@@ -4,15 +4,6 @@ from accounts.models import User
 from django.contrib.auth import get_user_model
 from accounts.serializers import MeSerializer, AuthorSerializer
 
-class FeedSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Feed
-        fields = [
-                "id",
-                "content",
-                "dreams",
-                ]
-
 class FeedDetailSerializer(serializers.ModelSerializer):
     author = AuthorSerializer(read_only=True)
     class Meta:
