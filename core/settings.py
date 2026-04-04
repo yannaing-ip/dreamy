@@ -42,8 +42,8 @@ INSTALLED_APPS = [
 
     'rest_framework',
 
-    'accounts',
-    'feeds',
+    'accounts.apps.AccountsConfig',
+    'feeds.apps.FeedsConfig',
     'dreams',
 ]
 
