@@ -8,6 +8,7 @@ from django.contrib.auth import login
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
+from django.db.models import Q
 
 class MeView(RetrieveAPIView):
     serializer_class = MeSerializer
@@ -106,3 +107,24 @@ class CustomTokenRefreshView(TokenRefreshView):
             "access": serializer.validated_data["access"],
             "refresh": request.data.get("refresh")  # keep the same refresh token
         }, status=status.HTTP_200_OK)
+
+
+class UserSearchView(generics.ListAPIView):
+    serializer_class = UserFollowSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        query = self.request.GET.get("q", "").strip()
+        if not query:
+            return User.objects.none()
+
+        # Make query case-insensitive and split by spaces
+        words = query.split()
+
+        q_obj = Q()
+        for word in words:
+            q_obj |= Q(username__icontains=word) | Q(first_name__icontains=word) | Q(last_name__icontains=word)
+
+        # Filter users and exclude self
+        qs = User.objects.filter(q_obj).exclude(id=self.request.user.id).distinct()
+        return qs[:20]  # limit results

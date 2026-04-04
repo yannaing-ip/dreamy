@@ -48,6 +48,13 @@ class User(AbstractUser):
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["username"]),
+            models.Index(fields=["first_name"]),
+            models.Index(fields=["last_name"]),
+        ]
+
 class Follow(models.Model):
     follower = models.ForeignKey(
             User,
