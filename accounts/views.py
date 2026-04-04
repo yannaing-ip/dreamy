@@ -7,6 +7,7 @@ from .serializers import RegisterSerializer, LoginSerializer, MeSerializer, User
 from django.contrib.auth import login
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenRefreshView
 
 class MeView(RetrieveAPIView):
     serializer_class = MeSerializer
@@ -92,3 +93,16 @@ class ProfileView(RetrieveAPIView):
     permission_classes = [IsAuthenticated]
     lookup_field = 'id'
     queryset = User.objects.all()
+
+class CustomTokenRefreshView(TokenRefreshView):
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({
+            "access": serializer.validated_data["access"],
+            "refresh": request.data.get("refresh")  # keep the same refresh token
+        }, status=status.HTTP_200_OK)
