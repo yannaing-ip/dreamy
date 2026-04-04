@@ -7,8 +7,8 @@ class User(AbstractUser):
             "dreams.Dream",
             blank=True
             )
-    follower_count = models.IntegerField(default=0)
-    follow_count = models.IntegerField(default=0)
+    followers_count = models.IntegerField(default=0)
+    following_count = models.IntegerField(default=0)
     first_name = models.CharField(
             max_length=25,
             null=False,
