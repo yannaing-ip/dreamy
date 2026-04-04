@@ -87,3 +87,25 @@ class CommentListCreateView(APIView):
         comment = Comment.objects.create(author=request.user, feed=feed, content=content)
         serializer = CommentSerializer(comment)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+class CommentDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, feed_id, comment_id):
+        try:
+            feed = Feed.objects.get(id=feed_id)
+        except Feed.DoesNotExist:
+            return Response({"error": "Feed not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            comment = Comment.objects.get(id=comment_id, feed=feed)
+        except Comment.DoesNotExist:
+            return Response({"error": "Comment not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Only comment author or feed author can delete
+        if request.user != comment.author and request.user != feed.author:
+            return Response({"error": "You don't have permission to delete this comment"},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        comment.delete()
+        return Response({"message": "Comment deleted successfully"}, status=status.HTTP_200_OK)
