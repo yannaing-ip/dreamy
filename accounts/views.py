@@ -11,6 +11,10 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from django.db.models import Q
 
 class MeView(RetrieveAPIView):
+    """
+    GET: Returns the authenticated user's profile including their subscribed dreams.
+    """
+    
     serializer_class = MeSerializer
     permission_classes = [IsAuthenticated]
 
@@ -18,6 +22,10 @@ class MeView(RetrieveAPIView):
         return self.request.user
 
 class RegisterView(CreateAPIView):
+    """
+    POST: Register a new user account.
+    Requires email, username, first_name, last_name, and password.
+    """
 
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
@@ -34,6 +42,10 @@ class RegisterView(CreateAPIView):
         )
 
 class LoginView(GenericAPIView):
+    """
+    POST: Authenticate with email and password.
+    Returns JWT access and refresh tokens.
+    """
 
     serializer_class = LoginSerializer
 
@@ -51,6 +63,12 @@ class LoginView(GenericAPIView):
             })
 
 class FollowToggleView(generics.GenericAPIView):
+    """
+    POST: Follow or unfollow a user by their ID.
+    If already following, unfollows. If not, follows.
+    Cannot follow yourself.
+    """
+    
     permission_classes = [IsAuthenticated]
 
     def post(self, request, user_id):
@@ -74,6 +92,10 @@ class FollowToggleView(generics.GenericAPIView):
         return Response({"message": "Followed successfully"})
 
 class FollowersListView(generics.ListAPIView):
+    """
+    GET: Returns a list of users who follow the specified user.
+    """
+
     serializer_class = UserFollowSerializer
     permission_classes = [IsAuthenticated]
 
@@ -82,6 +104,10 @@ class FollowersListView(generics.ListAPIView):
         return User.objects.filter(following__following__id=user_id)
 
 class FollowingListView(generics.ListAPIView):
+    """
+    GET: Returns a list of users that the specified user is following.
+    """
+
     serializer_class = UserFollowSerializer
     permission_classes = [IsAuthenticated]
 
@@ -90,6 +116,11 @@ class FollowingListView(generics.ListAPIView):
         return User.objects.filter(followers__follower__id=user_id)
 
 class ProfileView(RetrieveAPIView):
+    """
+    GET: Returns a user's public profile including their feeds.
+    Feed visibility rules are applied based on the authenticated viewer.
+    """
+
     serializer_class = ProfileSerializer
     permission_classes = [IsAuthenticated]
     queryset = User.objects.all()
@@ -101,6 +132,11 @@ class ProfileView(RetrieveAPIView):
         return context
 
 class CustomTokenRefreshView(TokenRefreshView):
+    """
+    POST: Refresh an expired access token using a valid refresh token.
+    Returns a new access token and the same refresh token.
+    """
+
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         try:
@@ -115,6 +151,12 @@ class CustomTokenRefreshView(TokenRefreshView):
 
 
 class UserSearchView(generics.ListAPIView):
+    """
+    GET: Search users by username, first name, or last name.
+    Use query param: ?q=<search_term>
+    Returns up to 20 results. Excludes the authenticated user.
+    """
+
     serializer_class = UserFollowSerializer
     permission_classes = [IsAuthenticated]
 

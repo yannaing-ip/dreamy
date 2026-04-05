@@ -7,6 +7,11 @@ from rest_framework import generics
 from rest_framework.views import APIView
 # Create your views here.
 class DreamListView(generics.ListAPIView):
+    """
+    GET: Returns a list of all available dreams. Supports ?search=<name> query param.
+    POST: Subscribe the authenticated user to a dream by dream_id.
+    """
+
     serializer_class = DreamSerializer
     permission_classes = [IsAuthenticated]
 
@@ -30,6 +35,10 @@ class DreamListView(generics.ListAPIView):
 
 
 class RemoveDreamView(APIView):
+    """
+    POST: Unsubscribe the authenticated user from a dream by dream_id.
+    """
+
     permission_classes = [IsAuthenticated]
 
     def post(self, request, dream_id):

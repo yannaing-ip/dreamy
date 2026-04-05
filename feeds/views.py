@@ -8,6 +8,10 @@ from rest_framework.views import APIView
 from feeds.services import get_visible_feeds
 
 class FeedView(generics.ListCreateAPIView):
+    """
+    GET: Returns feeds visible to the authenticated user based on visibility rules.
+    POST: Create a new feed post. Requires content, visibility, and dreams.
+    """
 
     serializer_class = FeedDetailSerializer
     permission_classes = [IsAuthenticated]
@@ -32,6 +36,10 @@ class FeedView(generics.ListCreateAPIView):
         serializer.save(author=self.request.user)
 
 class FeedDeleteView(generics.DestroyAPIView):
+    """
+    DELETE: Delete a feed post. Only the author can delete their own feed.
+    """
+
     queryset = Feed.objects.all()
     permission_classes = [IsAuthenticated]
 
@@ -43,12 +51,20 @@ class FeedDeleteView(generics.DestroyAPIView):
         return Response({"message": "Feed deleted successfully"}, status=status.HTTP_200_OK)
 
 class FeedDetailView(generics.RetrieveAPIView):
+    """
+    GET: Returns the details of a specific feed post.
+    """
 
     serializer_class = FeedDetailSerializer
     permission_classes = [IsAuthenticated]
     queryset = Feed.objects.all()
 
 class FeedLikeView(APIView):
+    """
+    GET: Returns a list of users who liked this feed.
+    POST: Toggle like on a feed. Adds like if not liked, removes if already liked.
+    """
+
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk):
@@ -86,6 +102,11 @@ class FeedLikeView(APIView):
         return Response(response)
 
 class CommentListCreateView(APIView):
+    """
+    GET: Returns all comments on a specific feed.
+    POST: Add a comment to a feed. Requires content field.
+    """
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request, feed_id):
@@ -113,6 +134,10 @@ class CommentListCreateView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class CommentDeleteView(APIView):
+    """
+    DELETE: Delete a comment. Only the comment author or feed author can delete.
+    """
+
     permission_classes = [IsAuthenticated]
 
     def delete(self, request, feed_id, comment_id):
