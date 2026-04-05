@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from .models import Dream
 from .serializers import DreamSerializer
 from rest_framework import generics
+from rest_framework.views import APIView
 # Create your views here.
 class DreamListView(generics.ListAPIView):
     serializer_class = DreamSerializer
@@ -28,7 +29,31 @@ class DreamListView(generics.ListAPIView):
         return Response({"message": f"Dream '{dream.name}' added successfully"})
 
 
+class RemoveDreamView(APIView):
+    permission_classes = [IsAuthenticated]
 
+    def post(self, request, dream_id):
+        try:
+            dream = Dream.objects.get(id=dream_id)
+        except Dream.DoesNotExist:
+            return Response(
+                {"error": "Dream not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
+        user = request.user
+
+        if dream not in user.dream.all():
+            return Response(
+                {"error": "Dream not in your list"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user.dream.remove(dream)
+
+        return Response(
+            {"message": "Dream removed successfully"},
+            status=status.HTTP_200_OK
+        )
 
 
