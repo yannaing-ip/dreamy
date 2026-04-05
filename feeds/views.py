@@ -39,6 +39,7 @@ class FeedDeleteView(generics.DestroyAPIView):
         feed = self.get_object()
         if request.user != feed.author:
             return Response({"error": "Not allowed"}, status=403)
+        feed.delete()
         return Response({"message": "Feed deleted successfully"}, status=status.HTTP_200_OK)
 
 class FeedDetailView(generics.RetrieveAPIView):
