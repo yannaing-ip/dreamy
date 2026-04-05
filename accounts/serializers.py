@@ -88,8 +88,13 @@ class ProfileSerializer(serializers.ModelSerializer):
         ]
 
     def get_feeds(self, obj):
-        # Import here to avoid circular import
-        from feeds.models import Feed
-        feeds_qs = Feed.objects.filter(author=obj).order_by("-created_at")
+
+        viewer = self.context["viewer"]
+
+        from feeds.services import get_visible_feeds
+        feeds_qs = get_visible_feeds(viewer).filter(
+                author=obj
+                ).order_by("-created_at")
+
         from feeds.serializers import FeedForProfileSerializer
         return FeedForProfileSerializer(feeds_qs, many=True).data

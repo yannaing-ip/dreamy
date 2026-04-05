@@ -92,8 +92,13 @@ class FollowingListView(generics.ListAPIView):
 class ProfileView(RetrieveAPIView):
     serializer_class = ProfileSerializer
     permission_classes = [IsAuthenticated]
-    lookup_field = 'id'
     queryset = User.objects.all()
+    lookup_field = "id"
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["viewer"] = self.request.user
+        return context
 
 class CustomTokenRefreshView(TokenRefreshView):
     def post(self, request, *args, **kwargs):

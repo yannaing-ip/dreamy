@@ -5,7 +5,8 @@ from dreams.models import Dream
 # Create your models here.
 visibility_choice = {
         "PR" : "private",
-        "PL" : "public"
+        "PL" : "public",
+        "PT" : "protected"
     }
 
 class Feed(models.Model):
