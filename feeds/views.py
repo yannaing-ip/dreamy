@@ -5,6 +5,7 @@ from rest_framework import status
 from .serializers import FeedDetailSerializer, LikeSerializer, CommentSerializer
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from feeds.services import get_visible_feeds
 
 class FeedView(generics.ListCreateAPIView):
 
@@ -12,8 +13,20 @@ class FeedView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        user_dreams = self.request.user.dream.all()
-        return Feed.objects.filter(dreams__in=user_dreams).distinct()
+
+        user = self.request.user
+
+        # Step 1: apply visibility rules
+        queryset = get_visible_feeds(user)
+
+        # Step 2: filter by user dreams
+        user_dreams = user.dream.all()
+
+        queryset = queryset.filter(
+            dreams__in=user_dreams
+        ).distinct()
+
+        return queryset.order_by("-created_at")
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
