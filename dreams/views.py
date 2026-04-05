@@ -3,7 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import Dream
 from .serializers import DreamSerializer
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.views import APIView
 # Create your views here.
 class DreamListView(generics.ListAPIView):
