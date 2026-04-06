@@ -199,7 +199,7 @@ class LikeTest(TestCase):
         Like.objects.create(user = self.user, feed = self.feed)
         response = self.client.get(f'/api/feeds/{self.feed.id}/likes/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data["results"]), 1)
 
     def test_like_unauthenticated(self):
         self.client.force_authenticate(user = None)
@@ -236,22 +236,21 @@ class CommentTest(TestCase):
         response = self.client.post(f'/api/feeds/{self.feed.id}/comments/', {})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_get_comments(self):
-        Comment.objects.create(
-            author = self.user,
-            feed = self.feed,
-            content = "Nice dream!"
-        )
-        response = self.client.get(f'/api/feeds/{self.feed.id}/comments/')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-
     def test_comment_count_increases(self):
         self.client.post(f'/api/feeds/{self.feed.id}/comments/', {
             "content": "Nice dream!"
         })
         self.feed.refresh_from_db()
         self.assertEqual(self.feed.comment_count, 1)
+    def test_get_comments(self):
+        Comment.objects.create(
+                author = self.user,
+                feed = self.feed,
+                content = "Nice dream!"
+                )
+        response = self.client.get(f'/api/feeds/{self.feed.id}/comments/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["results"]), 1)
 
     def test_delete_comment_by_author(self):
         comment = Comment.objects.create(

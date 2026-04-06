@@ -6,6 +6,7 @@ from .serializers import FeedDetailSerializer, LikeSerializer, CommentSerializer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from feeds.services import get_visible_feeds
+from core.paginations import FeedCursorPagination, CommentCursorPagination, LikePagePagination
 
 class FeedView(generics.ListCreateAPIView):
     """
@@ -15,6 +16,7 @@ class FeedView(generics.ListCreateAPIView):
 
     serializer_class = FeedDetailSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = FeedCursorPagination
 
     def get_queryset(self):
 
@@ -88,18 +90,22 @@ class FeedLikeView(APIView):
             return Response({"message": "Liked successfully"}, status=status.HTTP_201_CREATED)
 
     def get(self, request, pk):
-        """
-        Retrieve all users who liked this feed.
-        """
         try:
             feed = Feed.objects.get(pk=pk)
         except Feed.DoesNotExist:
             return Response({"error": "Feed not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        users = feed.likes.select_related('user').all().values('user__id', 'user__first_name', 'user__last_name')
-        # Transform to list of dicts
-        response = [{"id": u["user__id"], "first_name": u["user__first_name"], "last_name": u["user__last_name"]} for u in users]
-        return Response(response)
+        users = list(feed.likes.select_related('user').all().values(
+            'user__id', 'user__first_name', 'user__last_name'
+        ))
+        response = [
+            {"id": u["user__id"], "first_name": u["user__first_name"], "last_name": u["user__last_name"]}
+            for u in users
+        ]
+
+        paginator = LikePagePagination()
+        page = paginator.paginate_queryset(response, request)
+        return paginator.get_paginated_response(page)
 
 class CommentListCreateView(APIView):
     """
@@ -116,8 +122,11 @@ class CommentListCreateView(APIView):
             return Response({"error": "Feed not found"}, status=status.HTTP_404_NOT_FOUND)
 
         comments = feed.comments.select_related("author").all()
-        serializer = CommentSerializer(comments, many=True)
-        return Response(serializer.data)
+
+        paginator = CommentCursorPagination()
+        page = paginator.paginate_queryset(comments, request)
+        serializer = CommentSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
     def post(self, request, feed_id):
         try:

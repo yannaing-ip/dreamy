@@ -5,22 +5,33 @@ from .models import Dream
 from .serializers import DreamSerializer
 from rest_framework import generics, status
 from rest_framework.views import APIView
+from drf_spectacular.utils import extend_schema, inline_serializer
+from rest_framework import serializers as drf_serializers
 # Create your views here.
 class DreamListView(generics.ListAPIView):
     """
     GET: Returns a list of all available dreams. Supports ?search=<name> query param.
-    POST: Subscribe the authenticated user to a dream by dream_id.
+    POST: Add a dream to your profile by dream_id.
     """
 
     serializer_class = DreamSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = None
 
     def get_queryset(self):
-       search = self.request.query_params.get("search", "")
-       if search:
-           return Dream.objects.filter(name__icontains=search)
-       return Dream.objects.all()
+        search = self.request.query_params.get("search", "")
+        if search:
+            return Dream.objects.filter(name__icontains=search)
+        return Dream.objects.all()
 
+    @extend_schema(
+        methods=['POST'],
+        request=inline_serializer(
+            name='AddDreamToProfile',
+            fields={'dream_id': drf_serializers.IntegerField()}
+        ),
+        responses={200: None}
+    )
     def post(self, request):
         dream_id = request.data.get("dream_id")
         if not dream_id:
@@ -30,9 +41,31 @@ class DreamListView(generics.ListAPIView):
         except Dream.DoesNotExist:
             return Response({"error": "Dream not found"}, status=404)
         request.user.dream.add(dream)
-
         return Response({"message": f"Dream '{dream.name}' added successfully"})
 
+class DreamCreateView(APIView):
+    """
+    POST: Create a new dream and automatically subscribe the authenticated user to it.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        name = request.data.get("name")
+        description = request.data.get("description")
+
+        if not name:
+            return Response({"error": "name is required"}, status=status.HTTP_400_BAD_REQUEST)
+        if not description:
+            return Response({"error": "description is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if Dream.objects.filter(name__iexact=name).exists():
+            return Response({"error": "Dream with this name already exists"}, status=status.HTTP_400_BAD_REQUEST)
+
+        dream = Dream.objects.create(name=name, description=description)
+        request.user.dream.add(dream)
+
+        serializer = DreamSerializer(dream)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class RemoveDreamView(APIView):
     """

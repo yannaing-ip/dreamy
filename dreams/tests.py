@@ -33,23 +33,23 @@ class DreamListTest(TestCase):
         self.client.force_authenticate(user = self.user)
 
     def test_list_dreams(self):
-        response = self.client.get('/api/dream/')
+        response = self.client.get('/api/dreams/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
 
     def test_list_dreams_unauthenticated(self):
         self.client.force_authenticate(user = None)
-        response = self.client.get('/api/dream/')
+        response = self.client.get('/api/dreams/')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_search_dream_by_name(self):
-        response = self.client.get('/api/dream/?search=fly')
+        response = self.client.get('/api/dreams/?search=fly')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]["name"], "Flying")
 
     def test_search_dream_no_results(self):
-        response = self.client.get('/api/dream/?search=xyz')
+        response = self.client.get('/api/dreams/?search=xyz')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 0)
 
@@ -72,25 +72,25 @@ class DreamSubscribeTest(TestCase):
         self.client.force_authenticate(user = self.user)
 
     def test_subscribe_to_dream(self):
-        response = self.client.post('/api/dream/', {
+        response = self.client.post('/api/dreams/', {
             "dream_id": self.dream.id
         })
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn(self.dream, self.user.dream.all())
 
     def test_subscribe_invalid_dream_id(self):
-        response = self.client.post('/api/dream/', {
+        response = self.client.post('/api/dreams/', {
             "dream_id": 9999
         })
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_subscribe_missing_dream_id(self):
-        response = self.client.post('/api/dream/', {})
+        response = self.client.post('/api/dreams/', {})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_subscribe_unauthenticated(self):
         self.client.force_authenticate(user = None)
-        response = self.client.post('/api/dream/', {
+        response = self.client.post('/api/dreams/', {
             "dream_id": self.dream.id
         })
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

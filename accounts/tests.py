@@ -205,18 +205,18 @@ class UserSearchTest(TestCase):
     def test_search_by_username(self):
         response = self.client.get('/api/search/?q=otheruser')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data["results"]), 1)
 
     def test_search_excludes_self(self):
         response = self.client.get('/api/search/?q=yan')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        ids = [u["id"] for u in response.data]
+        ids = [u["id"] for u in response.data["results"]]
         self.assertNotIn(self.user.id, ids)
 
     def test_search_empty_query(self):
         response = self.client.get('/api/search/?q=')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 0)
+        self.assertEqual(len(response.data["results"]), 0)
 
     def test_search_unauthenticated(self):
         self.client.force_authenticate(user = None)
