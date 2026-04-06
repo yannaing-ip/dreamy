@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Yan Naing — Python / Django Developer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@300;400;500;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --border: #1f1f1f;
+      --accent: #e8ff47;
+      --accent2: #47b8ff;
+      --text: #f0f0f0;
+      --muted: #666;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'JetBrains Mono', 'Courier New', monospace;
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: 'Space Mono', 'Courier New', monospace;
+    }
+
+    /* Fix 5: lower z-index so noise doesn't block text selection */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 50;
+      opacity: 0.4;
+    }
+
+    /* ── NAVBAR ── */
+    #navbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(10,10,10,0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-logo {
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--accent);
+      text-decoration: none;
+      letter-spacing: 0.05em;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .nav-links a:hover { color: var(--accent); }
+
+    #hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      padding: 4px;
+      background: none;
+      border: none;
+    }
+
+    #hamburger span {
+      display: block;
+      width: 24px;
+      height: 2px;
+      background: var(--text);
+      transition: all 0.3s ease;
+    }
+
+    #hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    #hamburger.open span:nth-child(2) { opacity: 0; }
+    #hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    #drawer {
+      position: fixed;
+      top: 60px; right: 0;
+      width: 260px;
+      height: calc(100vh - 60px);
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      z-index: 99;
+      transform: translateX(100%);
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      padding: 2rem 1.5rem;
+    }
+
+    #drawer.open { transform: translateX(0); }
+
+    #drawer ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* Fix 6 & 7: replaced Syne/DM Mono with Space Mono/JetBrains Mono */
+    #drawer ul a {
+      color: var(--text);
+      text-decoration: none;
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+      font-size: 1.1rem;
+      transition: color 0.2s;
+    }
+
+    #drawer ul a:hover { color: var(--accent); }
+
+    #overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 98;
+    }
+
+    #overlay.open { display: block; }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 7rem 1.5rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-bg-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(6rem, 20vw, 18rem);
+      font-weight: 700;
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(232,255,71,0.05);
+      white-space: nowrap;
+      pointer-events: none;
+      user-select: none;
+      letter-spacing: -0.05em;
+    }
+
+    .hero-content {
+      max-width: 1100px;
+      margin: 0 auto;
+      width: 100%;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-tag {
+      display: inline-block;
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      padding: 0.3rem 0.8rem;
+      margin-bottom: 1.5rem;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .hero-name {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(2.5rem, 8vw, 5.5rem);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+      margin-bottom: 1rem;
+      animation: fadeUp 0.6s 0.1s ease both;
+    }
+
+    .hero-name span { color: var(--accent); }
+
+    .hero-title {
+      font-size: clamp(0.8rem, 2vw, 0.95rem);
+      color: var(--muted);
+      margin-bottom: 2rem;
+      animation: fadeUp 0.6s 0.2s ease both;
+    }
+
+    .hero-summary {
+      max-width: 580px;
+      font-size: 0.85rem;
+      line-height: 1.9;
+      color: #aaa;
+      margin-bottom: 2.5rem;
+      animation: fadeUp 0.6s 0.3s ease both;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      animation: fadeUp 0.6s 0.4s ease both;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #000;
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+      font-size: 0.8rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 0.75rem 1.75rem;
+      text-decoration: none;
+      transition: all 0.2s;
+      border: 2px solid var(--accent);
+      display: inline-block;
+    }
+
+    .btn-primary:hover { background: transparent; color: var(--accent); }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+      font-size: 0.8rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 0.75rem 1.75rem;
+      text-decoration: none;
+      border: 2px solid var(--border);
+      transition: all 0.2s;
+      display: inline-block;
+    }
+
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── SECTIONS ── */
+    section {
+      padding: 6rem 1.5rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .section-title {
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 3rem;
+      line-height: 1.1;
+    }
+
+    .section-divider {
+      width: 100%;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── ABOUT ── */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: start;
+    }
+
+    .about-text p {
+      color: #aaa;
+      font-size: 0.85rem;
+      line-height: 1.9;
+      margin-bottom: 1rem;
+    }
+
+    .about-info { display: flex; flex-direction: column; }
+
+    .info-row {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      padding: 0.85rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .info-row:last-child { border-bottom: none; }
+
+    .info-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      min-width: 80px;
+      padding-top: 2px;
+    }
+
+    .info-value { font-size: 0.82rem; color: var(--text); }
+    .info-value a { color: var(--accent2); text-decoration: none; }
+    .info-value a:hover { text-decoration: underline; }
+
+    /* ── SKILLS ── */
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .skill-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .skill-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+
+    .skill-category {
+      font-size: 0.68rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .skill-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+    .skill-tag {
+      font-size: 0.72rem;
+      padding: 0.3rem 0.6rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: #ccc;
+    }
+
+    /* ── PROJECTS ── */
+    .projects-list { display: flex; flex-direction: column; }
+
+    .project-item {
+      display: grid;
+      grid-template-columns: 50px 1fr auto;
+      gap: 1.5rem;
+      align-items: start;
+      padding: 2rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .project-item:first-child { border-top: 1px solid var(--border); }
+
+    .project-num {
+      font-size: 0.72rem;
+      color: var(--muted);
+      padding-top: 4px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .project-name {
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+    }
+
+    .project-desc {
+      font-size: 0.8rem;
+      color: #888;
+      line-height: 1.7;
+      margin-bottom: 1rem;
+      max-width: 560px;
+    }
+
+    .project-tech { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+    .tech-badge {
+      font-size: 0.65rem;
+      padding: 0.2rem 0.55rem;
+      background: rgba(232,255,71,0.07);
+      border: 1px solid rgba(232,255,71,0.2);
+      color: var(--accent);
+      letter-spacing: 0.05em;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .project-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      align-items: flex-end;
+      padding-top: 4px;
+    }
+
+    .project-link {
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      border: 1px solid var(--border);
+      padding: 0.3rem 0.7rem;
+      transition: all 0.2s;
+      white-space: nowrap;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .project-link:hover { color: var(--accent); border-color: var(--accent); }
+    .project-link.live { color: var(--accent2); border-color: rgba(71,184,255,0.3); }
+    .project-link.live:hover { background: rgba(71,184,255,0.1); border-color: var(--accent2); }
+
+    /* ── CONTACT ── */
+    #contact {
+      padding: 6rem 1.5rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: start;
+    }
+
+    .contact-left p {
+      color: #888;
+      font-size: 0.85rem;
+      line-height: 1.8;
+      margin-bottom: 2rem;
+    }
+
+    .contact-items { display: flex; flex-direction: column; gap: 1.2rem; }
+
+    .contact-item { display: flex; align-items: center; gap: 1rem; }
+
+    .contact-icon {
+      width: 38px;
+      height: 38px;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 0.9rem;
+    }
+
+    .contact-detail { font-size: 0.8rem; color: #aaa; }
+    .contact-detail a { color: var(--accent2); text-decoration: none; }
+    .contact-detail a:hover { text-decoration: underline; }
+    .contact-meta { font-size: 0.65rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 3px; }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem 1.5rem;
+      text-align: center;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    footer span { color: var(--accent); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── RESPONSIVE ── Fix 4 */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      #hamburger { display: flex; }
+      .about-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+      .contact-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+
+      .project-item {
+        grid-template-columns: 40px 1fr;
+        gap: 1rem;
+      }
+
+      .project-links {
+        grid-column: 2;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: flex-start;
+      }
+
+      .btn-primary, .btn-secondary {
+        width: 100%;
+        text-align: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .hero-cta { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav id="navbar">
+    <div class="nav-inner">
+      <a href="#" class="nav-logo">YN_</a>
+      <ul class="nav-links">
+        <li><a href="#about">About</a></li>
+        <li><a href="#skills">Skills</a></li>
+        <li><a href="#projects">Projects</a></li>
+        <li><a href="#contact">Contact</a></li>
+        <li><a href="/api/docs/" style="color: var(--accent);">API Docs ↗</a></li>
+      </ul>
+      <button id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- MOBILE DRAWER -->
+  <div id="overlay"></div>
+  <div id="drawer">
+    <ul>
+      <li><a href="#about">About</a></li>
+      <li><a href="#skills">Skills</a></li>
+      <li><a href="#projects">Projects</a></li>
+      <li><a href="#contact">Contact</a></li>
+      <li><a href="/api/docs/" style="color: var(--accent);">API Docs ↗</a></li>
+    </ul>
+  </div>
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-bg-text">DREAMY</div>
+    <div class="hero-content">
+      <div class="hero-tag">Available for Remote &amp; Freelance</div>
+      <h1 class="hero-name">Yan<br /><span>Naing.</span></h1>
+      <p class="hero-title">// Junior Python / Django Backend Developer</p>
+      <p class="hero-summary">
+        Self-taught Python developer with 6 years of hands-on coding experience,
+        specializing in backend development with Django and Django REST Framework.
+        Creator of Andropy — an open-source Python-to-Kotlin transpiler for native Android apps.
+      </p>
+      <div class="hero-cta">
+        <a href="#projects" class="btn-primary">View Projects</a>
+        <a href="#contact" class="btn-secondary">Get in Touch</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider" style="max-width: 1100px; margin: 0 auto;"></div>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="section-label">// 01 — About</div>
+    <h2 class="section-title">Who I Am</h2>
+    <div class="about-grid">
+      <div class="about-text">
+        <p>
+          I'm a self-taught backend developer from Sagaing, Myanmar, with a deep passion for building
+          real-world software. I quit a non-IT job to pursue programming full-time — teaching myself
+          Python, Django, and everything in between through building actual projects.
+        </p>
+        <p>
+          My most ambitious project is Andropy — an open-source framework that transpiles Python code
+          into Kotlin Jetpack Compose, enabling Python developers to build native Android apps.
+          This pushed me deep into AST manipulation, language design, and software architecture.
+        </p>
+        <p>
+          I build clean, well-tested REST APIs and love solving complex backend problems. I also take
+          on freelance projects — APIs, backend systems, and full-stack Django apps. Actively looking
+          for a remote Python/Django backend role where I can contribute and grow.
+        </p>
+      </div>
+      <div class="about-info">
+        <div class="info-row">
+          <span class="info-label">Name</span>
+          <span class="info-value">Yan Naing</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Location</span>
+          <span class="info-value">Sagaing, Myanmar</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Email</span>
+          <!-- Fix 1: plain text avoids Cloudflare obfuscation -->
+          <span class="info-value">yannaing.dev&#64;gmail.com</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Phone</span>
+          <span class="info-value">+95 998 173 9378</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">GitHub</span>
+          <span class="info-value"><a href="https://github.com/yannaing-ip" target="_blank">github.com/yannaing-ip</a></span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Status</span>
+          <span class="info-value" style="color: var(--accent);">Open to Remote &amp; Freelance</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider" style="max-width: 1100px; margin: 0 auto;"></div>
+
+  <!-- SKILLS -->
+  <section id="skills">
+    <div class="section-label">// 02 — Skills</div>
+    <h2 class="section-title">Technical Stack</h2>
+    <div class="skills-grid">
+      <div class="skill-card">
+        <div class="skill-category">Languages</div>
+        <div class="skill-tags">
+          <span class="skill-tag">Python</span>
+          <span class="skill-tag">JavaScript</span>
+          <span class="skill-tag">Kotlin</span>
+          <span class="skill-tag">HTML</span>
+          <span class="skill-tag">CSS</span>
+        </div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-category">Backend</div>
+        <div class="skill-tags">
+          <span class="skill-tag">Django</span>
+          <span class="skill-tag">Django REST Framework</span>
+          <span class="skill-tag">REST API Design</span>
+        </div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-category">Authentication</div>
+        <div class="skill-tags">
+          <span class="skill-tag">JWT / SimpleJWT</span>
+          <span class="skill-tag">Custom User Models</span>
+          <span class="skill-tag">Email-based Auth</span>
+        </div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-category">Databases</div>
+        <div class="skill-tags">
+          <span class="skill-tag">PostgreSQL</span>
+          <span class="skill-tag">SQLite</span>
+        </div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-category">Frontend</div>
+        <div class="skill-tags">
+          <span class="skill-tag">React</span>
+          <span class="skill-tag">Tailwind CSS</span>
+          <span class="skill-tag">DaisyUI</span>
+        </div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-category">Tools &amp; Concepts</div>
+        <div class="skill-tags">
+          <span class="skill-tag">Git / GitHub</span>
+          <span class="skill-tag">AST Parsing</span>
+          <span class="skill-tag">Code Transpilation</span>
+          <span class="skill-tag">Linux</span>
+          <span class="skill-tag">Railway</span>
+          <span class="skill-tag">PythonAnywhere</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider" style="max-width: 1100px; margin: 0 auto;"></div>
+
+  <!-- PROJECTS -->
+  <section id="projects">
+    <div class="section-label">// 03 — Projects</div>
+    <h2 class="section-title">What I've Built</h2>
+    <div class="projects-list">
+
+      <div class="project-item">
+        <div class="project-num">01</div>
+        <div class="project-body">
+          <div class="project-name">Dreamy</div>
+          <p class="project-desc">
+            A dream-based social networking REST API where users connect through shared aspirations.
+            Features JWT auth, custom user model, follow system, feeds with visibility control,
+            likes, comments, cursor-based pagination, and auto-generated Swagger docs.
+          </p>
+          <div class="project-tech">
+            <span class="tech-badge">Django 6</span>
+            <span class="tech-badge">DRF</span>
+            <span class="tech-badge">JWT</span>
+            <span class="tech-badge">SQLite</span>
+            <span class="tech-badge">drf-spectacular</span>
+            <span class="tech-badge">PythonAnywhere</span>
+          </div>
+        </div>
+        <div class="project-links">
+          <a href="https://yannaing.pythonanywhere.com/api/docs/" target="_blank" class="project-link live">Live API ↗</a>
+          <a href="https://github.com/yannaing-ip/dreamy" target="_blank" class="project-link">GitHub ↗</a>
+        </div>
+      </div>
+
+      <div class="project-item">
+        <div class="project-num">02</div>
+        <div class="project-body">
+          <div class="project-name">Andropy</div>
+          <p class="project-desc">
+            An open-source Python framework that transpiles Python code into Kotlin Jetpack Compose,
+            enabling Python developers to build native Android applications. Built from scratch with
+            custom AST parsing, a CLI tool, and published to PyPI.
+          </p>
+          <div class="project-tech">
+            <span class="tech-badge">Python</span>
+            <span class="tech-badge">Kotlin</span>
+            <span class="tech-badge">Jetpack Compose</span>
+            <span class="tech-badge">AST</span>
+            <span class="tech-badge">PyPI</span>
+            <span class="tech-badge">CLI</span>
+          </div>
+        </div>
+        <div class="project-links">
+          <a href="https://github.com/yannaing-ip/andropy" target="_blank" class="project-link">GitHub ↗</a>
+        </div>
+      </div>
+
+      <div class="project-item">
+        <div class="project-num">03</div>
+        <div class="project-body">
+          <div class="project-name">HTTP Server</div>
+          <p class="project-desc">
+            A minimal HTTP server built from scratch in Python without any frameworks,
+            demonstrating deep understanding of networking fundamentals, socket programming,
+            and the HTTP protocol.
+          </p>
+          <div class="project-tech">
+            <span class="tech-badge">Python</span>
+            <span class="tech-badge">Sockets</span>
+            <span class="tech-badge">HTTP Protocol</span>
+            <span class="tech-badge">Networking</span>
+          </div>
+        </div>
+        <div class="project-links">
+          <a href="https://github.com/yannaing-ip/httpserver" target="_blank" class="project-link">GitHub ↗</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="section-divider" style="max-width: 1100px; margin: 0 auto;"></div>
+
+  <!-- CONTACT — Fix 3: proper section tag with id -->
+  <section id="contact">
+    <div class="section-label">// 04 — Contact</div>
+    <h2 class="section-title" style="font-size: clamp(1.5rem, 3vw, 2.2rem);">Let's Work Together</h2>
+    <div class="contact-grid">
+      <div class="contact-left">
+        <p>
+          I'm actively looking for remote Python/Django backend roles and open to freelance
+          projects. If you have a project, a position, or just want to talk code —
+          feel free to reach out.
+        </p>
+        <!-- Fix 1: encoded mailto, Cloudflare won't detect it -->
+        <a href="mailto&#58;yannaing&#46;dev&#64;gmail&#46;com" class="btn-primary">Send Email</a>
+      </div>
+      <div class="contact-items">
+        <div class="contact-item">
+          <div class="contact-icon">✉</div>
+          <div class="contact-detail">
+            <div class="contact-meta">Email</div>
+            <!-- Fix 3: plain text, no anchor tag, Cloudflare can't touch it -->
+            yannaing.dev&#64;gmail.com
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">☎</div>
+          <div class="contact-detail">
+            <div class="contact-meta">Phone</div>
+            +95 998 173 9378
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">⌂</div>
+          <div class="contact-detail">
+            <div class="contact-meta">Location</div>
+            Sagaing, Myanmar (Open to Remote)
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">⌥</div>
+          <div class="contact-detail">
+            <div class="contact-meta">GitHub</div>
+            <a href="https://github.com/yannaing-ip" target="_blank">github.com/yannaing-ip</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>Built by <span>Yan Naing</span> &nbsp;·&nbsp; Powered by Django &nbsp;·&nbsp;
+    <a href="/api/docs/" style="color: var(--accent2); text-decoration: none;">API Docs ↗</a></p>
+  </footer>
+
+  <!-- Fix 2: complete JavaScript, no cut-off -->
+  <script>
+    const hamburger = document.getElementById('hamburger');
+    const drawer = document.getElementById('drawer');
+    const overlay = document.getElementById('overlay');
+
+    function toggleDrawer() {
+      hamburger.classList.toggle('open');
+      drawer.classList.toggle('open');
+      overlay.classList.toggle('open');
+    }
+
+    hamburger.addEventListener('click', toggleDrawer);
+    overlay.addEventListener('click', toggleDrawer);
+
+    drawer.querySelectorAll('a').forEach(function(link) {
+      link.addEventListener('click', function() {
+        if (drawer.classList.contains('open')) {
+          toggleDrawer();
+        }
+      });
+    });
+
+    window.addEventListener('scroll', function() {
+      const nav = document.getElementById('navbar');
+      nav.style.boxShadow = window.scrollY > 20 ? '0 4px 30px rgba(0,0,0,0.5)' : 'none';
+    });
+  </script>
+
+</body>
+</html>
+
